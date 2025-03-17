@@ -1,0 +1,6 @@
+.venv
+Mask_RCNN_TF2
+pesos_treinados_github
+pesos_treinados_local
+imagens
+__pycache__
