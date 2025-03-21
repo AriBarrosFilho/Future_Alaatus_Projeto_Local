@@ -60,6 +60,8 @@ from Mask_RCNN_TF2.mrcnn import visualize
 import Mask_RCNN_TF2.mrcnn.model as modellib
 from Mask_RCNN_TF2.mrcnn.model import log
 
+import streamlit as st
+
 # Execute as 5 linhas abaixo para que não tenhamos problemas ao executar com as versões mais recentes do Tensorflow
 from tensorflow.compat.v1 import ConfigProto
 from tensorflow.compat.v1 import InteractiveSession
@@ -69,66 +71,73 @@ session = InteractiveSession(config=config)
 
 #==========================================================================================================================
 
-# Caminho onde estão os pesos treinados
-caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_mobilephone_0017.h5"
+@st.cache_data
+def carregar_pesos():
 
-# Tenta carregar o modelo
-try:
+    # Caminho onde estão os pesos treinados
+    caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_mobilephone_0017.h5"
 
-  # Carrega o modelo com base nos pesos importados
-  model_phone, inference_config_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
+    # Tenta carregar o modelo
+    try:
 
-# Caso não seja possível carregar o modelo
-except:
+        # Carrega o modelo com base nos pesos importados
+        model_phone, inference_config_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
 
-  # Alerta ao usuário de que houve um problema
-  print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-  model_phone, inference_config_phone = (0, 0)
+    # Caso não seja possível carregar o modelo
+    except:
 
-#==========================================================================================================================
+        # Alerta ao usuário de que houve um problema
+        print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
+        model_phone, inference_config_phone = (0, 0)
 
-# Caminho onde estão os pesos treinados
-caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_balloon_0017.h5"
+    #==========================================================================================================================
 
-# Tenta carregar o modelo
-try:
+    # Caminho onde estão os pesos treinados
+    caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_balloon_0017.h5"
 
-  # Carrega o modelo com base nos pesos importados
-  model_balloon, inference_config_balloon = carrega_modelo_teste(model_path = caminho_pesos_treinados)
+    # Tenta carregar o modelo
+    try:
 
-# Caso não seja possível carregar o modelo
-except:
+        # Carrega o modelo com base nos pesos importados
+        model_balloon, inference_config_balloon = carrega_modelo_teste(model_path = caminho_pesos_treinados)
 
-  # Alerta ao usuário de que houve um problema
-  print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-  model_balloon, inference_config_balloon = (0, 0)
+    # Caso não seja possível carregar o modelo
+    except:
 
-#==========================================================================================================================
+        # Alerta ao usuário de que houve um problema
+        print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
+        model_balloon, inference_config_balloon = (0, 0)
 
-# Caminho onde estão os pesos treinados
-caminho_pesos_treinados = "NÃO VOU USAR"
+    #==========================================================================================================================
 
-# Tenta carregar o modelo
-try:
+    # Caminho onde estão os pesos treinados
+    caminho_pesos_treinados = "NÃO VOU USAR"
 
-  # Carrega o modelo com base nos pesos importados
-  model_balloon_phone, inference_config_balloon_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
+    # Tenta carregar o modelo
+    try:
 
-# Caso não seja possível carregar o modelo
-except:
-  
-  # Alerta ao usuário de que houve um problema
-  print("DEU ALGO ERRADO PARA O MODELO DO BALÃO E DO CELULAR, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-  model_balloon_phone, inference_config_balloon_phone = (0,0)
+        # Carrega o modelo com base nos pesos importados
+        model_balloon_phone, inference_config_balloon_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
 
-#==========================================================================================================================
+    # Caso não seja possível carregar o modelo
+    except:
+    
+        # Alerta ao usuário de que houve um problema
+        print("DEU ALGO ERRADO PARA O MODELO DO BALÃO E DO CELULAR, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
+        model_balloon_phone, inference_config_balloon_phone = (0,0)
 
-# Dicionário que conterá o modelo e o nome das classes para a segmentação
-modelo_classe = {'balloon': (model_balloon, ['Bexiga']), 
-                 'phone': (model_phone, ["Celular"]), 
-                 'balloon_phone': (model_balloon_phone, ['Bexiga', 'Celular'])}
+    #==========================================================================================================================
 
-id_classe = {'1': 'Bexiga', '2': 'Celular'}
+    # Dicionário que conterá o modelo e o nome das classes para a segmentação
+    modelo_classe = {'balloon': (model_balloon, ['Bexiga']), 
+                    'phone': (model_phone, ["Celular"]), 
+                    'balloon_phone': (model_balloon_phone, ['Bexiga', 'Celular'])}
+
+    id_classe = {'1': 'Bexiga', '2': 'Celular'}
+
+    return modelo_classe, id_classe
+
+modelo_classe, id_classe = carregar_pesos()
 
 #==========================================================================================================================
 
@@ -200,9 +209,8 @@ img = imread(df_imagem_especifica['caminho'])
 # Define o modelo
 model = modelo_classe[tipo][0]
 
-resultados = model.detect([img], verbose = 0)
-
-r = resultados[0]
+# Obtém os dados de segmentação da imagem
+r = model.detect([img], verbose = 0)[0]
 
 #==========================================================================================================================
 
@@ -212,18 +220,8 @@ image_path = df_imagens["caminho"][indice].split("future_alaatus\\")[1]
 # Máscara de segmentação
 mask = r["masks"]
 
-print(mask)
-
 # Imagem de saída
 output_path = "teste2.png"
 
 # Aplica a máscara de segmentação na imagem e salva a nova imagem
 apply_mask(image_path, mask, output_path, alpha = 1.0, intensity = 0.0)
-
-#==========================================================================================================================
-
-
-#==========================================================================================================================
-
-
-#==========================================================================================================================

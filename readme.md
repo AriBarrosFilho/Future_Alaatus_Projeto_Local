@@ -12,9 +12,12 @@ Este projeto busca trazer todos os notebooks e arquivos relavantes utilizados no
 
 |Arquivo ou pasta|Descrição|
 |-|-|
-|requirements.txt|Um arquivo padrão em projetos que busca apresentar as bibliotecas e suas respectivas versões. É fundamental para evitar conflitos de versões, você pode usar o comando `pip install -r requirements.txt` para a instalação das bibliotecas. <br><br>É aconselhado realizar a instalação das bibliotecas de forma manual e na ordem abaixo, visto que é a forma garantida de que não haverá problemas, já que a instalação através do ``requirements.txt`` já apresentou problemas.|
 |.gitignore|Um arquivo padrão em projetos que faz com que o Git ignore as pastas e arquivos que forem listados lá dentro. <br><br> As pastas que foram ignoradas ocupam muito espaço de memória.|
-|utils.py|Conjunto de funções próprias para auxiliar na execução de algumas células|
+|.python-version|Arquivo que determina qual a versão do Python será utilizada no projeto.|
+|9 - Colab.ipynb|Notebook extraído diretamente do Google Colab, onde utilizei o mesmo para comparação e adaptação de um novo noteook local. <br><br> Esse notebook|
+|requirements.txt|Um arquivo padrão em projetos que busca apresentar as bibliotecas e suas respectivas versões. É fundamental para evitar conflitos de versões, você pode usar o comando `pip install -r requirements.txt` para a instalação das bibliotecas. <br><br>É aconselhado realizar a instalação das bibliotecas de forma manual e na ordem abaixo, visto que é a forma garantida de que não haverá problemas, já que a instalação através do ``requirements.txt`` já apresentou problemas.|
+|auxiliar.py|Conjunto de funções próprias para auxiliar na execução de algumas células|
+
 
 
 
