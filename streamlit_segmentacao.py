@@ -1,9 +1,8 @@
 # streamlit run streamlit_segmentacao.py
-
-
 import streamlit as st
 import io
 
+import joblib
 
 # Interage com o sistema operacional, como manipular arquivos e diretórios.
 import os
@@ -98,88 +97,6 @@ if img_file_buffer is not None:
     st.text("Você acabou de tirar a foto, estamos processando...")
     tempo_inicial = time.time()
 
-#==========================================================================================================================
-
-
-# # Verifica se as bibliotecas já foram carregadas
-# if "pesos_carregados" not in st.session_state:
-
-#     # Caminho onde estão os pesos treinados
-#     caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_mobilephone_0017.h5"
-
-#     # Tenta carregar o modelo
-#     try:
-
-#         # Carrega o modelo com base nos pesos importados
-#         model_phone, inference_config_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
-
-#     # Caso não seja possível carregar o modelo
-#     except:
-
-#         # Alerta ao usuário de que houve um problema
-#         print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-#         model_phone, inference_config_phone = (0, 0)
-
-#     #==========================================================================================================================
-
-#     # Caminho onde estão os pesos treinados
-#     caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_balloon_0017.h5"
-
-#     # Tenta carregar o modelo
-#     try:
-
-#         # Carrega o modelo com base nos pesos importados
-#         model_balloon, inference_config_balloon = carrega_modelo_teste(model_path = caminho_pesos_treinados)
-
-#     # Caso não seja possível carregar o modelo
-#     except:
-
-#         # Alerta ao usuário de que houve um problema
-#         print("DEU ALGO ERRADO, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-#         model_balloon, inference_config_balloon = (0, 0)
-
-#     #==========================================================================================================================
-
-#     # Caminho onde estão os pesos treinados
-#     caminho_pesos_treinados = "NÃO VOU USAR"
-
-#     # Tenta carregar o modelo
-#     try:
-
-#         # Carrega o modelo com base nos pesos importados
-#         model_balloon_phone, inference_config_balloon_phone = carrega_modelo_teste(model_path = caminho_pesos_treinados)
-
-#     # Caso não seja possível carregar o modelo
-#     except:
-    
-#         # Alerta ao usuário de que houve um problema
-#         print("DEU ALGO ERRADO PARA O MODELO DO BALÃO E DO CELULAR, REVEJA AS CONFIGURAÇÕES DA QUANTIDADE DE CLASSES NA SEÇÃO 3.2.")
-#         model_balloon_phone, inference_config_balloon_phone = (0,0)
-
-#     #==========================================================================================================================
-
-#     # Dicionário que conterá o modelo e o nome das classes para a segmentação
-#     modelo_classe = {'balloon': (model_balloon, ['Bexiga']), 
-#                     'phone': (model_phone, ["Celular"]), 
-#                     'balloon_phone': (model_balloon_phone, ['Bexiga', 'Celular'])}
-
-#     id_classe = {'1': 'Bexiga', '2': 'Celular'}
-
-#     # Marca que as bibliotecas já foram carregadas
-#     st.session_state["pesos_carregados"] = True
-
-#     if "modelo_classe" not in st.session_state:
-#         st.session_state.modelo_classe = modelo_classe
-
-#     if "id_classe" not in st.session_state:
-#         st.session_state.id_classe = id_classe
-
-
-# modelo_classe = st.session_state.modelo_classe
-# id_classe = st.session_state.id_classe
-
-#-----------------------------------------------------------------------------------
-
 
 # Caminho onde estão os pesos treinados
 caminho_pesos_treinados = "pesos_treinados_local\mask_rcnn_mobilephone_0017.h5"
@@ -201,25 +118,26 @@ modelo_classe = {
 
 id_classe = {'1': 'Bexiga', '2': 'Celular'}
 
-#==========================================================================================================================
-
 if os.path.exists(path = NOME_IMAGEM):
 
-    # Define o objeto que será segmentado
-    # tipo_modelo: 'balloon', 'phone' ou 'balloon_phone'
-    tipo = "phone"
+    for tipo in ["phone", "balloon"]:
 
-    # Define a imagem com base em seu caminho
-    img = imread(NOME_IMAGEM)
+        # Define a imagem com base em seu caminho
+        img = imread(NOME_IMAGEM)
 
-    # Define o modelo
-    model = modelo_classe[tipo][0]
+        # Define o modelo
+        model = modelo_classe[tipo][0]
 
-    # Obtém os dados de segmentação da imagem
-    r = model.detect([img], verbose = 0)[0]
+        if tipo == "phone":
+            # Obtém os dados de segmentação da imagem
+            r1 = model.detect([img], verbose = 0)[0]
+
+        if tipo == "balloon":
+            # Obtém os dados de segmentação da imagem
+            r2 = model.detect([img], verbose = 0)[0]
 
     # Caso nenhum objeto tenha sido detectado
-    if r["rois"].size == 0:
+    if (r1["rois"].size == 0) and (r2["rois"].size == 0):
 
         if tempo_inicial != None:
             tempo_total = time.time() - tempo_inicial
@@ -229,19 +147,20 @@ if os.path.exists(path = NOME_IMAGEM):
 
     # Caso algum objeto tenha sido detectado
     else:
-    
-        #------------------------------------------------------------------------------------
 
-        # Máscara de segmentação
-        mask = r["masks"]
-
-        # Aplica a máscara de segmentação na imagem e salva a nova imagem
-        apply_mask(NOME_IMAGEM, mask, NOME_IMAGEM, alpha = 1.0, intensity = 0.0)
+        highlight_objects(image_path = NOME_IMAGEM, class1 = r1, class2 = r2, output_path = NOME_IMAGEM, alpha = 1.0, intensity = 0.0)
 
         st.image(NOME_IMAGEM)
+
+        if (r1['masks'].shape[2] != 0) and r2['masks'].shape[2] != 0:
+            media_pixels_celular = r1['masks'].sum() / r1['masks'].shape[2]
+            densidade_pixels = media_pixels_celular / 102.72
+            area_balao = r2['masks'].sum() / densidade_pixels
+            modelo = joblib.load(filename = "regressao_linear.pkl")
+            X = np.array([area_balao]).reshape(-1, 1)
+            peso = modelo.predict(X = X)
+            st.text(f"O balão pesa {peso} gramas")
 
         if tempo_inicial != None:
             tempo_total = time.time() - tempo_inicial
             st.text(f"Demorou {tempo_total:.2f} segundos")
-            
-        st.text("Deu certo")

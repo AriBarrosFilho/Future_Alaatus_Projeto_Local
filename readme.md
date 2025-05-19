@@ -6,13 +6,19 @@ Este projeto busca trazer todos os notebooks e arquivos relavantes utilizados no
 
 |Autor|Data|Descrição|Commit|
 |-|-|-|-|
-|Ariosvaldo Filho|xx/xx/xxxx|Realização do primeiro commit, onde o arquivo `9. Testes com os pesos de segmentação - Teste.ipynb` do Google Colab foi importado para que eu pudesse começar a testá-lo em ambiente local. As bibliotecas e suas versões foram o primeiro teste e que funcionaram. <br><br> As bibliotecas instaladas permitiram que todas as células de importação de bibliotecas do notebook `9 - Testes com os pesos de segmentação - Teste.ipynb` não apresentassem nenhum erro. <br><br>A pasta `Mask_RCNN_TF2` é original e ainda não passou pela célula que realiza a sua instalação.|xxxx|
+|Ariosvaldo Filho|16/03/2025|Realização do primeiro commit, onde o arquivo `9. Testes com os pesos de segmentação - Teste.ipynb` do Google Colab foi importado para que eu pudesse começar a testá-lo em ambiente local. As bibliotecas e suas versões foram o primeiro teste e que funcionaram. <br><br> As bibliotecas instaladas permitiram que todas as células de importação de bibliotecas do notebook `9 - Testes com os pesos de segmentação - Teste.ipynb` não apresentassem nenhum erro. <br><br>A pasta `Mask_RCNN_TF2` é original e ainda não passou pela célula que realiza a sua instalação.|a61eb87|
+|Ariosvaldo Filho|19/05/2025|Organização dos arquivos, dos notebooks.|xxxxxx|
 
 > Descrição dos arquivos e pastas
 
 |Arquivo ou pasta|Descrição|
 |-|-|
-|.gitignore|Um arquivo padrão em projetos que faz com que o Git ignore as pastas e arquivos que forem listados lá dentro. <br><br> As pastas que foram ignoradas ocupam muito espaço de memória.|
+|.venv|É o ambiente virtual que contém as bibliotecas com as versões utilizadas para rodar todos os arquivos do projeto.|
+|analise_dados|Pasta que contém notebooks e arquivos que serão utilizados para a análise do modelo de previsão do peso através da área em $cm^2$ da bexiga.|
+|imagens|Pasta que contém uma série de pastas no com o seguinte os nomes no seguinte formato id_peso, cada pasta vai conter uma série de fotos das bexigas com os celulares.|
+|Mask_RCNN_TF2|Arquitetura de rede neural que realizará a segmentação dos objetos que foram treinados.|
+|pesos_treinados_local|Contém os modelos que foram treinados, o modelo que segmenta a bexiga e o celular|
+|.gitignore|Um arquivo padrão em projetos que faz com que o Git ignore as pastas e arquivos que forem listados lá dentro. <br><br> As pastas que foram ignoradas ocupam muito espaço de armazenamento.|
 |.python-version|Arquivo que determina qual a versão do Python será utilizada no projeto.|
 |9 - Colab.ipynb|Notebook extraído diretamente do Google Colab, onde utilizei o mesmo para comparação e adaptação de um novo noteook local. <br><br> Esse notebook|
 |requirements.txt|Um arquivo padrão em projetos que busca apresentar as bibliotecas e suas respectivas versões. É fundamental para evitar conflitos de versões, você pode usar o comando `pip install -r requirements.txt` para a instalação das bibliotecas. <br><br>É aconselhado realizar a instalação das bibliotecas de forma manual e na ordem abaixo, visto que é a forma garantida de que não haverá problemas, já que a instalação através do ``requirements.txt`` já apresentou problemas.|
@@ -25,15 +31,23 @@ Este projeto busca trazer todos os notebooks e arquivos relavantes utilizados no
 
 ---
 
-Crie o ambiente virtual:
+### Baixe e instale o pyenv
+[Como instalar o pyenv para Windows, Linux e Mac](https://www.youtube.com/watch?v=9LYqtLuD7z4)
+
+### Baixe e instale a versão 3.10.11 do python
+Com o terminal aberto, digite: `pyenv install 3.10.11`
+
+### Crie o ambiente virtual:
 
 `python -m venv .venv`
 
-Entre no ambiente virtual:
+
+### Entre no ambiente virtual:
 
 `.\.venv\Scripts\activate`
 
-Instale as seguintes bibliotecas manualmente:
+
+### Instale as seguintes bibliotecas manualmente:
 
 * pip install streamlit==1.11.0
 
@@ -70,3 +84,7 @@ Instale as seguintes bibliotecas manualmente:
 * ~~pip install h5py==3.8.0~~ `Já existe, não precisa instalar`
 
 * ~~pip install ipython==4.7.0.68~~ `Não instalar, porque depois ela impossibilita que qualquer célula de qualquer notebook rode`
+
+
+### Insira o comando abaixo para rodar a aplicação streamlit: <br>
+`streamlit run streamlit_segmentacao.py`

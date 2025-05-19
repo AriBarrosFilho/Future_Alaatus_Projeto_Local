@@ -3,4 +3,5 @@ Mask_RCNN_TF2
 pesos_treinados_github
 pesos_treinados_local
 imagens
+imagens_geradas
 __pycache__
