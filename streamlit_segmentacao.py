@@ -73,11 +73,13 @@ config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
 
-#==========================================================================================================================
+import streamlit as st
 
-NOME_IMAGEM = "imagem_streamlit.png"
+
+NOME_IMAGEM = "imagens_geradas/imagem_streamlit.png"
 
 img_file_buffer = st.camera_input("Tire uma foto de uma bexiga junto com um celular")
+# img_file_buffer = st.camera_input("")
 
 tempo_inicial = None
 
@@ -95,6 +97,8 @@ if img_file_buffer is not None:
 
     # 
     st.text("Você acabou de tirar a foto, estamos processando...")
+
+    # Obtém o momento inicial de quando o processamento ocorre
     tempo_inicial = time.time()
 
 
@@ -116,7 +120,7 @@ modelo_classe = {
                     'phone': (model_phone, ["Celular"])
                 }
 
-id_classe = {'1': 'Bexiga', '2': 'Celular'}
+# id_classe = {'1': 'Bexiga', '2': 'Celular'}
 
 if os.path.exists(path = NOME_IMAGEM):
 
@@ -128,13 +132,11 @@ if os.path.exists(path = NOME_IMAGEM):
         # Define o modelo
         model = modelo_classe[tipo][0]
 
-        if tipo == "phone":
-            # Obtém os dados de segmentação da imagem
-            r1 = model.detect([img], verbose = 0)[0]
-
-        if tipo == "balloon":
-            # Obtém os dados de segmentação da imagem
-            r2 = model.detect([img], verbose = 0)[0]
+        # Obtém os dados de segmentação da imagem
+        if tipo == "phone": r1 = model.detect([img], verbose = 0)[0]
+            
+        # Obtém os dados de segmentação da imagem
+        if tipo == "balloon": r2 = model.detect([img], verbose = 0)[0]
 
     # Caso nenhum objeto tenha sido detectado
     if (r1["rois"].size == 0) and (r2["rois"].size == 0):
@@ -148,19 +150,60 @@ if os.path.exists(path = NOME_IMAGEM):
     # Caso algum objeto tenha sido detectado
     else:
 
-        highlight_objects(image_path = NOME_IMAGEM, class1 = r1, class2 = r2, output_path = NOME_IMAGEM, alpha = 1.0, intensity = 0.0)
+        # Salva uma imagem com os objetos destacados
+        highlight_objects_streamlit(image_path = NOME_IMAGEM, class1 = r1, 
+                                    class2 = r2, output_path = NOME_IMAGEM, 
+                                    alpha = 1.0, intensity = 0.0)
 
+        # Apresenta a imagem
         st.image(NOME_IMAGEM)
 
         if (r1['masks'].shape[2] != 0) and r2['masks'].shape[2] != 0:
+
+            # Calcula a média de pixels do celular
             media_pixels_celular = r1['masks'].sum() / r1['masks'].shape[2]
+
+            # Calcula a densidade de pixels
             densidade_pixels = media_pixels_celular / 102.72
+
+            # Obtém a área do balão em cm2
             area_balao = r2['masks'].sum() / densidade_pixels
-            modelo = joblib.load(filename = "regressao_linear.pkl")
-            X = np.array([area_balao]).reshape(-1, 1)
-            peso = modelo.predict(X = X)
-            st.text(f"O balão pesa {peso} gramas")
+
+            # Define os coeficientes da equação polinomial
+            pol = np.poly1d([-2.69384403e-05,  2.44677526e-02,  
+                             2.08218398e+00,  2.53396383e+01])
+
+            # Tira o formato de matriz
+            X = area_balao.ravel()
+
+            # Obtém o peso previsto
+            peso = pol(X)
+
+            # Formata o peso previsto
+            peso_final = np.round(a = peso, decimals = 1)[0]
+
+            # Apresenta o peso previsto da bexiga ao usuário
+            st.text(f"O balão pesa {peso_final} gramas")
 
         if tempo_inicial != None:
+
+            # Obtém o tempo total de execução do processamento da imagem
             tempo_total = time.time() - tempo_inicial
-            st.text(f"Demorou {tempo_total:.2f} segundos")
+
+            # Apresenta o tempo total de execução do processamento da imagem ao usuário
+            st.text(f"Demorou {tempo_total:.1f} segundos")
+
+
+
+
+# # Título da aplicação
+# st.title("Previsão do peso de bexigas por imagem")
+
+# # Para dar espaçamento vertical
+# st.markdown("""# """)
+# st.markdown("""# """)
+
+# # Subtítulo
+# st.subheader("Tire uma foto de uma bexiga com um celular do lado.")
+
+# st.markdown(f"## O balão pesa {peso_final} gramas")

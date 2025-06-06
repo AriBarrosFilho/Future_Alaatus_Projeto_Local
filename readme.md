@@ -88,3 +88,19 @@ Com o terminal aberto, digite: `pyenv install 3.10.11`
 
 ### Insira o comando abaixo para rodar a aplicação streamlit: <br>
 `streamlit run streamlit_segmentacao.py`
+
+### Crie uma conta no ngrok
+
+[ngrok](https://dashboard.ngrok.com/login)
+
+Depois de entrar na sua conta na ngrok, baixe e extraia o arquivo,
+
+[Arquivo para baixar](https://dashboard.ngrok.com/get-started/setup/windows)
+
+Configure seu ngrok através do arquivo (ele abrirá um terminal), e digite o código ao lado `ngrok config add-authtoken (seu token)`
+
+### Observe o número final do `Local URL` ou `Network URL` e adicione para ficar no seguinte formato e coloque no terminal do ngrok
+
+ngrok http http://localhost:8501
+
+Pegue o link no `Forwarding` e compartilhe

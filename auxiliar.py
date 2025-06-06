@@ -567,3 +567,56 @@ def highlight_objects(image_path: str, class1: dict, class2: dict, output_path: 
     success = cv2.imwrite(output_path, processed_image)
     if not success:
         raise RuntimeError("Erro ao salvar a imagem. Verifique o caminho de saída e permissões.")
+    
+
+def highlight_objects_streamlit(image_path: str, class1: dict, class2: dict, output_path: str, alpha: float = 1.0, intensity: float = 0.0):
+    """
+    Processa uma imagem para destacar objetos de duas classes em cores diferentes, desenha caixas delimitadoras
+    e adiciona rótulos aleatórios. O restante da imagem é convertido para preto e branco.
+
+    Args:
+        image_path (str): Caminho da imagem original.
+        class1 (dict): Dicionário contendo "rois" e "masks" para a primeira classe.
+        class2 (dict): Dicionário contendo "rois" e "masks" para a segunda classe.
+        output_path (str): Caminho onde a imagem processada será salva.
+        alpha (float): Intensidade da cor do objeto em destaque (0 a 1).
+        intensity (float): Intensidade das cores do fundo (0 preto e branco, 1 original).
+    """
+    # Cores para as classes (BGR)
+    color1 = (0, 255, 0)  # Verde
+    color2 = (255, 0, 0)  # Azul
+    
+    # Carregar imagem
+    image = cv2.imread(image_path, cv2.IMREAD_COLOR)
+    if image is None:
+        raise ValueError("Erro ao carregar a imagem. Verifique o caminho.")
+    
+    height, width = image.shape[:2]
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(gray_image, cv2.COLOR_GRAY2BGR)
+    processed_image = cv2.addWeighted(gray_image, 1 - intensity, image, intensity, 0)
+    
+    def apply_class_mask(image, rois, masks, color, label):
+        overlay = np.zeros_like(image, dtype=np.uint8)
+        overlay[:] = color
+
+        if len(rois) > 0:
+        
+            for i in range(len(rois)):
+                mask = masks[:, :, i]
+                image[mask] = cv2.addWeighted(image[mask], 1 - alpha, overlay[mask], alpha, 0)
+                
+                y1, x1, y2, x2 = rois[i]
+                cv2.rectangle(image, (x1, y1), (x2, y2), (0, 0, 255), 2)
+                # label = "Classe " + str(random.randint(1, 2))
+                # cv2.putText(image, label, (x1, y1 - 50), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 5, cv2.LINE_AA)
+        
+    if len(class1["rois"]) > 0:
+        apply_class_mask(processed_image, class1["rois"], class1["masks"], color1, "Celular")
+
+    if len(class2["rois"]) > 0:
+        apply_class_mask(processed_image, class2["rois"], class2["masks"], color2, "Bexiga")
+    
+    success = cv2.imwrite(output_path, processed_image)
+    if not success:
+        raise RuntimeError("Erro ao salvar a imagem. Verifique o caminho de saída e permissões.")
